@@ -311,6 +311,79 @@ export const TEMPLATES: Record<TemplateId, TemplateMeta> = {
     ],
     features: { darkMode: true, whatsapp: false, contactForm: true, maps: false, hours: false },
   },
+  fitness: {
+    id: "fitness",
+    layout: "topbar",
+    name: "Fitness Coach",
+    icon: "💪",
+    blurb:
+      "Personal trainers and gyms — bold statement hero, benefits and priced membership plans.",
+    defaultPages: ["home", "about", "pricing", "team", "booking", "contact"],
+    pageLabels: { pricing: "Plans", team: "Coaches", booking: "Book a session" },
+    defaultPalette: "pulse",
+    heroAlign: "left",
+    heroPrimary: "See my plans",
+    primaryTarget: "pricing",
+    featuredHeading: "Benefits of training",
+    anchor: "benefits",
+    featuredCardLabel: "All benefits",
+    promo: "🔥 New clients: free movement screen + first session free",
+    stats: [
+      { value: "12wk", label: "Typical transformation" },
+      { value: "2,400+", label: "Sessions coached" },
+      { value: "94%", label: "Still training at 6 months" },
+      { value: "ACE", label: "Certified coach" },
+    ],
+    features: { darkMode: true, whatsapp: true, contactForm: true, maps: true, hours: true },
+  },
+  saas: {
+    id: "saas",
+    layout: "topbar",
+    name: "SaaS Landing",
+    icon: "🧰",
+    blurb:
+      "Software products — clear hero, feature trio, pricing tiers, FAQ and a closing CTA.",
+    defaultPages: ["home", "pricing", "faq", "about", "contact"],
+    pageLabels: { pricing: "Pricing", faq: "FAQ", about: "Product" },
+    defaultPalette: "midnight",
+    heroAlign: "center",
+    heroPrimary: "Start free trial",
+    primaryTarget: "pricing",
+    featuredHeading: "Everything you need",
+    anchor: "features",
+    featuredCardLabel: "All features",
+    stats: [
+      { value: "4.9/5", label: "Customer rating" },
+      { value: "12k+", label: "Teams onboard" },
+      { value: "99.99%", label: "Uptime last year" },
+      { value: "<5min", label: "Time to first value" },
+    ],
+    features: { darkMode: true, whatsapp: false, contactForm: true, maps: false, hours: false },
+  },
+  law: {
+    id: "law",
+    layout: "topbar",
+    name: "Law Firm",
+    icon: "⚖️",
+    blurb:
+      "Solicitors and law firms — restrained, trustworthy practice areas, attorneys and FAQs.",
+    defaultPages: ["home", "about", "team", "faq", "contact"],
+    pageLabels: { about: "The firm", team: "Attorneys", faq: "Questions" },
+    defaultPalette: "slate",
+    heroAlign: "left",
+    heroPrimary: "Request a consultation",
+    primaryTarget: "contact",
+    featuredHeading: "Practice areas",
+    anchor: "practice",
+    featuredCardLabel: "All practice areas",
+    stats: [
+      { value: "1998", label: "Established" },
+      { value: "1,400+", label: "Cases resolved" },
+      { value: "92%", label: "Favourable outcomes" },
+      { value: "30min", label: "Average reply time" },
+    ],
+    features: { darkMode: true, whatsapp: true, contactForm: true, maps: true, hours: true },
+  },
 };
 
 export const TEMPLATE_ORDER: TemplateId[] = [
@@ -327,6 +400,9 @@ export const TEMPLATE_ORDER: TemplateId[] = [
   "agency",
   "newsroom",
   "dashboard",
+  "fitness",
+  "saas",
+  "law",
 ];
 
 export function templateMeta(id: TemplateId): TemplateMeta {
@@ -342,6 +418,10 @@ const DEFAULT_LABELS: Record<PageId, string> = {
   team: "Our team",
   booking: "Book now",
   jobs: "Jobs & careers",
+  pricing: "Pricing",
+  faq: "FAQ",
+  testimonials: "Testimonials",
+  news: "News",
 };
 
 /** Page label within a specific template (e.g. "menu" → "Menu" / "Services"). */

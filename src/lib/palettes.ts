@@ -259,6 +259,32 @@ export const PALETTES: Palette[] = [
       heroBg: "#121A23",
     },
   },
+  {
+    id: "pulse",
+    name: "Pulse",
+    light: {
+      bg: "#F5F6F3",
+      surface: "#FFFFFF",
+      surface2: "#E9ECE3",
+      text: "#14180F",
+      muted: "#5D6552",
+      border: "#D8DDCE",
+      accent: "#5B8C0A",
+      accentText: "#FFFFFF",
+      heroBg: "#E9EFDC",
+    },
+    dark: {
+      bg: "#0E100C",
+      surface: "#171A13",
+      surface2: "#212619",
+      text: "#EFF3E8",
+      muted: "#9BA48D",
+      border: "#2E3423",
+      accent: "#A3E635",
+      accentText: "#101507",
+      heroBg: "#131610",
+    },
+  },
 ];
 
 export function getPalette(id: PaletteId): Palette {

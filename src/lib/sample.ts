@@ -34,6 +34,12 @@ export function createSite(template: TemplateId): SiteConfig {
       return createNewsroom();
     case "dashboard":
       return createDashboard();
+    case "fitness":
+      return createFitness();
+    case "saas":
+      return createSaas();
+    case "law":
+      return createLaw();
     default:
       return createRestaurant();
   }
@@ -56,6 +62,8 @@ function baseConfig(template: TemplateId): SiteConfig {
     services: [],
     team: [],
     jobs: [],
+    faqs: [],
+    testimonials: [],
     contact: { phone: "", email: "", address: "", whatsapp: "", mapsQuery: "" },
     hours: "",
     features: { ...meta.features },
@@ -492,11 +500,166 @@ function createDashboard(): SiteConfig {
   return site;
 }
 
-const EMPTY_MENU_ITEM = { id: "", name: "", description: "", price: "", image: "" };
+function createFitness(): SiteConfig {
+  const site = baseConfig("fitness");
+  site.siteName = "Riley Ford";
+  site.tagline = "Certified personal trainer — strength, mobility and conditioning.";
+  site.hero = {
+    heading: "You don’t get stronger by wishing. You get stronger by showing up.",
+    subtext:
+      "Coaching for people who want results without the hype: a plan built around your body, your week and your actual life — trained in the studio or online.",
+  };
+  site.about = {
+    text:
+      "I’ve coached people from their first pull-up to their first marathon, and the winning habit is always the same: a plan you can actually stick to.\n\nI’m a NASM-certified personal trainer with nine years of studio and online experience. Every client starts with a free movement screen, and every plan is written in plain language — no jargon, no punishment, no crash diets. Train with me at the studio, from home, or a bit of both.",
+  };
+  site.services = [
+    { id: "b1", icon: "💪", title: "Build real strength", description: "Progressive strength work that makes everyday lifting feel easy — and keeps getting easier." },
+    { id: "b2", icon: "⚡", title: "More energy", description: "Short, sharp sessions that beat the afternoon slump and carry you through the whole day." },
+    { id: "b3", icon: "🧘", title: "Move pain-free", description: "Mobility and technique work for backs, shoulders and knees that have been shouting at you." },
+    { id: "b4", icon: "😴", title: "Sleep properly", description: "Evening routines and recovery habits that turn restless nights into deep, consistent sleep." },
+  ];
+  site.menu = [
+    { id: "pl1", name: "Duo Training", description: "You plus one partner, one shared plan. Cheaper than private, twice the motivation — and a standing Friday session.", price: "70 / month", image: "", link: "" },
+    { id: "pl2", name: "Small Group Strength", description: "Up to three trainees in a high-energy group class. All the personal attention, none of the awkward small talk.", price: "70 / month", image: "", link: "" },
+    { id: "pl3", name: "1:1 Personal Coaching", description: "Fully personal programming built around your schedule, goals and pace — with weekly check-ins and form review.", price: "120 / month", image: "", link: "" },
+  ];
+  site.team = [
+    { id: "c1", name: "Riley Ford", role: "Head coach", bio: "NASM-certified, nine years in, and still warming up with push-ups.", link: "" },
+    { id: "c2", name: "Sam Okafor", role: "Strength coach", bio: "Powerlifter turned mobility nerd. Specialises in older athletes and return from injury.", link: "" },
+    { id: "c3", name: "Mia Delgado", role: "Coach & nutritionist", bio: "Runs the kitchen plans and the post-workout smoothie recipes nobody asked for.", link: "" },
+  ];
+  site.faqs = [
+    { id: "q1", question: "Do I need to be fit to start?", answer: "Not at all. Roughly half my clients couldn’t do a single full push-up when they started. The plan starts where you are and builds from there." },
+    { id: "q2", question: "What if I miss a session?", answer: "Life happens — send me a note and I’ll move it. Every plan is built with a little slack so one missed week doesn’t undo three good ones." },
+    { id: "q3", question: "Studio or online?", answer: "Both. Studio sessions run 6am–8pm weekdays in the centre; online coaching includes video form review and a plan you can follow anywhere." },
+    { id: "q4", question: "Can I cancel any time?", answer: "Yes — monthly plans cancel with 30 days’ notice, no exit fees and no “membership trap”." },
+  ];
+  site.testimonials = [
+    { id: "t1", quote: "I walked in unable to climb stairs without stopping. Eight months later I carried my wedding dress up a hill. Genuinely life-changing.", author: "Hannah R.", role: "1:1 coaching, 8 months" },
+    { id: "t2", quote: "No shouty routines, no guilt. Riley just fixed what was broken in my program and suddenly I wasn’t sore for a week at a time.", author: "Marcus T.", role: "Small Group Strength" },
+    { id: "t3", quote: "I train at 6am before work on a laptop from my kitchen. It’s the only appointment I’ve ever kept for months.", author: "Priya S.", role: "Online coaching" },
+  ];
+  site.hours = "Mon–Fri 6:00–20:00\nSat 8:00–13:00";
+  site.contact = {
+    phone: "+1 (555) 604 7788",
+    email: "train@rileysstrength.example",
+    address: "Unit 4, Ironworks Building, 18 Mill Lane",
+    whatsapp: "+1 555 604 7788",
+    mapsQuery: "",
+  };
+  return site;
+}
+
+function createSaas(): SiteConfig {
+  const site = baseConfig("saas");
+  site.siteName = "Relay";
+  site.tagline = "Deploy software without the release anxiety.";
+  site.hero = {
+    heading: "Ship on Friday. Sleep on Saturday.",
+    subtext:
+      "Relay gives your team previews for every change, one-click rollbacks and a full audit trail — so releases stop being events and start being routine.",
+  };
+  site.about = {
+    text:
+      "Relay sits between your code and your customers. Every pull request gets its own preview environment; every production deploy is one click and instantly reversible.\n\nWe built Relay after one too many Friday deployments. Today it runs the release process for more than twelve thousand engineering teams — from three-person startups to regulated banks — without changing how anyone writes code.",
+  };
+  site.services = [
+    { id: "f1", icon: "🔍", title: "Preview every change", description: "A disposable environment per pull request, seeded with realistic data. Review the change before a human sees it." },
+    { id: "f2", icon: "↩️", title: "One-click rollback", description: "Revert a bad release in seconds, with the database to match. No archaeology, no 3am merge conflicts." },
+    { id: "f3", icon: "🧾", title: "Complete audit trail", description: "Every deploy, approval and permission change recorded and exportable. Answer compliance questions in minutes." },
+    { id: "f4", icon: "🔐", title: "Permissions that make sense", description: "Environment-level access, SSO, SCIM and audit-logged admin actions — without a second product to buy." },
+    { id: "f5", icon: "🔔", title: "Alerts where you work", description: "Deploy and incident notifications in Slack, Teams and email, with per-environment routing." },
+    { id: "f6", icon: "⚡", title: "Fast by default", description: "Median pipeline time under four minutes. Your deploys stop being the slowest thing in your stack." },
+  ];
+  site.menu = [
+    { id: "t1", name: "Starter", description: "For side projects and small teams getting their first release process in place. Unlimited previews, one environment.", price: "0 / month", image: "", link: "" },
+    { id: "t2", name: "Team", description: "Shared environments, approvals, one-click rollback and Slack alerts. Everything a growing team needs.", price: "29 / user / month", image: "", link: "" },
+    { id: "t3", name: "Business", description: "SSO, audit exports, advanced permissions and a 99.99% uptime SLA with priority support.", price: "79 / user / month", image: "", link: "" },
+  ];
+  site.faqs = [
+    { id: "q1", question: "How long does setup take?", answer: "Most teams are deploying through Relay in under an hour. Connect your Git host, pick your first service, and the first preview builds itself." },
+    { id: "q2", question: "Does it work with our stack?", answer: "Relay sits in front of your existing CI. Anything that builds into a container or artifact — Node, Python, Go, Rails, .NET — works without changes." },
+    { id: "q3", question: "Where is our data stored?", answer: "In your own cloud account, in the region you choose. Relay never proxies production traffic, and we can’t read your application data." },
+    { id: "q4", question: "Can we self-host?", answer: "Business plans can run entirely inside your own VPC, including the control plane. Ask us and we’ll send the deployment guide." },
+    { id: "q5", question: "What happens when you’re down?", answer: "Your existing deploys keep working — Relay is never in the path of serving traffic. Business plans include a 99.99% uptime SLA." },
+  ];
+  site.testimonials = [
+    { id: "t1", quote: "We cut our release process from forty minutes to four. The rollback button has paid for the year twice over.", author: "Ana Kovács", role: "VP Engineering, fintech" },
+    { id: "t2", quote: "Our auditors used to ask for deploy logs. Now I export a report before they finish their coffee.", author: "Dev P.", role: "Head of Platform" },
+    { id: "t3", quote: "The preview-per-PR thing changed how we review code. Nobody merges blind any more.", author: "Sara M.", role: "Engineering Manager" },
+  ];
+  site.jobs = [
+    { id: "j1", title: "Senior Backend Engineer", dept: "Engineering", location: "Remote (EU)", type: "Full-time" },
+    { id: "j2", title: "Developer Advocate", dept: "Marketing", location: "Remote (global)", type: "Full-time" },
+  ];
+  site.contact = {
+    phone: "",
+    email: "hello@relay.example",
+    address: "",
+    whatsapp: "",
+    mapsQuery: "",
+  };
+  return site;
+}
+
+function createLaw(): SiteConfig {
+  const site = baseConfig("law");
+  site.siteName = "Hale & Voss";
+  site.tagline = "Commercial litigation, employment and property law — plainly explained.";
+  site.hero = {
+    heading: "Straight answers when it matters most.",
+    subtext:
+      "A small firm of trial lawyers and solicitors who tell you where you stand, what it will cost and what happens next — before you sign anything.",
+  };
+  site.about = {
+    text:
+      "Hale & Voss was founded in 1998 on one principle: clients should always understand their own case. We have acted for founders, employers, landlords and families across the region for over twenty-five years, and we still take every first call ourselves.\n\nWe work in plain language, with written costs agreed before we start. Most of our matters settle early — but when something has to be argued, we argue it properly, in court if that’s what it takes.",
+  };
+  site.services = [
+    { id: "s1", icon: "⚔️", title: "Commercial litigation", description: "Contract disputes, shareholder claims and debt recovery — argued or settled, whichever serves you better." },
+    { id: "s2", icon: "👔", title: "Employment law", description: "Contracts, dismissals, disputes and workplace policies, for both employers and employees." },
+    { id: "s3", icon: "🔑", title: "Property & conveyancing", description: "Sales, purchases, leases and disputes, with clear updates at every stage of the transfer." },
+    { id: "s4", icon: "👨‍👩‍👧", title: "Family law", description: "Separation, children arrangements and financial settlements handled with care and without theatre." },
+    { id: "s5", icon: "📜", title: "Wills & probate", description: "Estate planning, powers of attorney and helping families through probate with patience." },
+    { id: "s6", icon: "🏛️", title: "Regulatory compliance", description: "Licensing, data protection and sector rules — practical advice before the problem arrives." },
+  ];
+  site.team = [
+    { id: "a1", name: "Margaret Hale", role: "Founding partner", bio: "Thirty years in commercial litigation. Has never lost a case she declined to take.", link: "" },
+    { id: "a2", name: "Daniel Voss", role: "Partner, property", bio: "Conveyancing and landlord disputes. Calm, thorough and famously hard to rush.", link: "" },
+    { id: "a3", name: "Priya Raman", role: "Associate, employment", bio: "Employment tribunal specialist. Clients say she explains the paperwork so it actually makes sense.", link: "" },
+    { id: "a4", name: "Tom Whitaker", role: "Solicitor", bio: "Wills, probate and family. The person families ask for by name.", link: "" },
+  ];
+  site.faqs = [
+    { id: "q1", question: "How much will my case cost?", answer: "We agree fees in writing before we start, with a fixed amount for defined work or an hourly rate with a cap you approve. You will get the same estimate, not an invoice with surprises." },
+    { id: "q2", question: "How long will it take?", answer: "It depends on the other side and the court, not on us. After the first consultation you get a realistic timetable with the milestones that matter, and we update you when anything changes." },
+    { id: "q3", question: "Do I need a consultation first?", answer: "Yes, and the first conversation is free. It tells us whether we’re the right firm, whether it’s worth proceeding, and roughly what comes next." },
+    { id: "q4", question: "Can you work remotely?", answer: "Almost always. Consultations, document reviews and negotiations all work over video or phone, and we attend court when it’s in person." },
+    { id: "q5", question: "What are your qualifications?", answer: "Every matter is led by a solicitor or barrister listed in the firm register, and we’re registered with the relevant professional body. Ask and we’ll show you." },
+  ];
+  site.testimonials = [
+    { id: "t1", quote: "They told me on day one that my case was weak. That honesty saved me six months and a lot of money.", author: "Former client, commercial dispute", role: "" },
+    { id: "t2", quote: "Every letter arrived on time, every cost was explained before it happened. I never had to chase anyone.", author: "Client, property sale", role: "" },
+    { id: "t3", quote: "Mrs Hale handled a hearing that had put three previous firms out. Calm, prepared and completely straight with us.", author: "Client, employment tribunal", role: "" },
+  ];
+  site.hours = "Mon–Fri 9:00–17:30\nOut-of-hours emergencies: call the main line";
+  site.contact = {
+    phone: "+1 (555) 320 1180",
+    email: "enquiries@haleandvoss.example",
+    address: "2nd Floor, 44 Chancery Lane",
+    whatsapp: "",
+    mapsQuery: "",
+  };
+  return site;
+}
+
+const EMPTY_MENU_ITEM = { id: "", name: "", description: "", price: "", image: "", link: "" };
 const EMPTY_PROJECT_ITEM = { id: "", title: "", description: "", image: "", link: "" };
-const EMPTY_SERVICE_ITEM = { id: "", title: "", description: "", icon: "" };
-const EMPTY_TEAM_ITEM = { id: "", name: "", role: "", bio: "" };
+const EMPTY_SERVICE_ITEM = { id: "", title: "", description: "", icon: "", link: "" };
+const EMPTY_TEAM_ITEM = { id: "", name: "", role: "", bio: "", link: "" };
 const EMPTY_JOB_ITEM = { id: "", title: "", dept: "", location: "", type: "" };
+const EMPTY_FAQ_ITEM = { id: "", question: "", answer: "" };
+const EMPTY_TESTIMONIAL_ITEM = { id: "", quote: "", author: "", role: "" };
 const EMPTY_CUSTOM_PAGE = {
   id: "",
   title: "",
@@ -572,5 +735,11 @@ export function normalizeSite(input: unknown): SiteConfig {
     jobs: Array.isArray(raw.jobs)
       ? raw.jobs.map((j) => ({ ...EMPTY_JOB_ITEM, ...(j ?? {}) }))
       : defaults.jobs,
+    faqs: Array.isArray(raw.faqs)
+      ? raw.faqs.map((f) => ({ ...EMPTY_FAQ_ITEM, ...(f ?? {}) }))
+      : defaults.faqs,
+    testimonials: Array.isArray(raw.testimonials)
+      ? raw.testimonials.map((t) => ({ ...EMPTY_TESTIMONIAL_ITEM, ...(t ?? {}) }))
+      : defaults.testimonials,
   };
 }

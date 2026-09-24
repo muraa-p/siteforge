@@ -12,7 +12,7 @@
 // else — if the preview looks right, the exported site looks right.
 // ---------------------------------------------------------------------------
 
-import type { JobItem, MenuItem, PageId, PaletteId, ProjectItem, ServiceItem, SiteConfig, SocialKey } from "./types";
+import type { JobItem, MenuItem, PageId, PaletteId, ProjectItem, ServiceItem, SiteConfig, SocialKey, TemplateId } from "./types";
 import { FEATURE_STRIP, isBuiltInPage, isTextAlign } from "./types";
 import { SOCIAL_META } from "./types";
 import { getPalette, type ThemeTokens } from "./palettes";
@@ -29,6 +29,10 @@ export const PAGE_FILE: Record<PageId, string> = {
   team: "team.html",
   booking: "booking.html",
   jobs: "jobs.html",
+  pricing: "pricing.html",
+  faq: "faq.html",
+  testimonials: "testimonials.html",
+  news: "news.html",
 };
 
 /** File name for any page ref (custom pages get `<slug>.html`). */
@@ -792,6 +796,81 @@ ${appStyles ? `
 body.modal-open { overflow: hidden; }
 [data-modal] { cursor: pointer; }
 
+/* ---------- Pricing plans (fitness / SaaS / anyone) ---------- */
+.plans-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: start; }
+.plan-card {
+  position: relative; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 28px 24px 26px; display: flex; flex-direction: column; gap: 10px;
+}
+.plan-card.is-featured { border-color: var(--accent); box-shadow: 0 14px 40px rgba(0, 0, 0, 0.1); transform: translateY(-6px); }
+.plan-flag {
+  position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+  background: var(--accent); color: var(--accent-text);
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 4px 12px; border-radius: 999px; white-space: nowrap;
+}
+.plan-name { margin: 0; font-family: var(--font-head); font-size: 1.3rem; }
+.plan-price { margin: 0; font-family: var(--font-head); font-weight: 700; font-size: 2rem; color: var(--accent); line-height: 1.1; }
+.plan-desc { margin: 0; color: var(--muted); font-size: 0.98rem; flex: 1; }
+.plan-card .btn { align-self: stretch; justify-content: center; margin-top: 8px; }
+
+/* ---------- FAQ (native <details>, no JS) ---------- */
+.faq-list { display: flex; flex-direction: column; gap: 10px; max-width: 780px; }
+.faq-item { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+.faq-item summary {
+  cursor: pointer; padding: 16px 20px; font-weight: 600; list-style: none;
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+}
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary::after { content: "+"; color: var(--accent); font-size: 1.3rem; line-height: 1; flex: none; }
+.faq-item[open] summary::after { content: "–"; }
+.faq-answer { padding: 0 20px 18px; color: var(--muted); }
+.faq-answer p { margin: 0 0 10px; }
+.faq-answer p:last-child { margin: 0; }
+
+/* ---------- Testimonials ---------- */
+.quote-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.quote-card {
+  margin: 0; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 18px; padding: 24px 24px 20px;
+}
+.quote-card blockquote { margin: 0 0 14px; font-size: 1.02rem; line-height: 1.6; }
+.quote-card blockquote::before { content: "“"; color: var(--accent); font-family: var(--font-head); font-size: 1.6rem; line-height: 0; vertical-align: -0.2em; margin-right: 2px; }
+.quote-card figcaption { color: var(--muted); font-size: 0.9rem; font-weight: 600; }
+.quotes-band { background: var(--surface2); }
+.quotes-band .quote-card { background: var(--surface); }
+.tpl-fitness .quotes-band { background: transparent; }
+
+/* ---------- News / journal ---------- */
+.news-item {
+  display: grid; grid-template-columns: 200px 1fr; gap: 22px; align-items: start;
+  padding: 22px 0; border-bottom: 1px solid var(--border);
+}
+.news-item:first-child { padding-top: 8px; }
+.news-img { width: 100%; height: 140px; object-fit: cover; border-radius: 14px; }
+.news-body h3 { margin: 0 0 6px; font-family: var(--font-head); font-size: 1.35rem; }
+.news-body p { margin: 0; color: var(--muted); }
+.news-body .link { display: inline-block; margin-top: 8px; font-weight: 600; }
+
+/* ---------- Fitness: loud, high-energy, image-free but bold ---------- */
+.tpl-fitness .hero h1 { font-size: clamp(2.6rem, 7vw, 4.6rem); line-height: 1.02; letter-spacing: -0.03em; max-width: 900px; }
+.tpl-fitness .hero { border-bottom: 4px solid var(--accent); }
+.tpl-fitness .stat-value { font-family: var(--font-head); font-weight: 700; }
+.tpl-fitness .service-card { border-top: 4px solid var(--accent); }
+.tpl-fitness .plan-card.is-featured { transform: translateY(-6px) scale(1.02); }
+
+/* ---------- SaaS: centred, product-y ---------- */
+.tpl-saas .hero { text-align: center; }
+.tpl-saas .hero h1 { font-size: clamp(2.6rem, 7vw, 4.4rem); letter-spacing: -0.035em; line-height: 1.03; max-width: 880px; margin-left: auto; margin-right: auto; }
+.tpl-saas .hero-cta { justify-content: center; }
+.tpl-saas .service-card { border-radius: 18px; }
+
+/* ---------- Law firm: restrained, serif, trustworthy ---------- */
+.tpl-law .section-head { font-family: var(--font-head); letter-spacing: -0.01em; }
+.tpl-law .hero h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); max-width: 760px; }
+.tpl-law .service-card { background: transparent; border-style: solid; }
+.tpl-law .stat { border-left: 3px solid var(--accent); padding-left: 14px; text-align: left; }
+
 /* ---------- Responsive ---------- */
 @media (max-width: 760px) {
   .hero { padding: 64px 0 56px; }
@@ -817,6 +896,12 @@ body.modal-open { overflow: hidden; }
   .tpl-modern .hero { padding: 96px 0 88px; }
   .tpl-modern .hero h1 { font-size: clamp(2.3rem, 10vw, 3.3rem); }
   .stats-row { grid-template-columns: repeat(2, 1fr); gap: 18px; padding: 24px 0; }
+  .plans-grid { grid-template-columns: 1fr; gap: 16px; }
+  .plan-card.is-featured { transform: none; }
+  .quote-grid { grid-template-columns: 1fr; }
+  .news-item { grid-template-columns: 1fr; gap: 12px; }
+  .news-img { height: 180px; }
+  .tpl-law .stat { border-left: 0; padding-left: 0; }
   .form-grid { grid-template-columns: 1fr; }
   .job-card { flex-direction: column; align-items: flex-start; }
   .tpl-films .card-grid { grid-template-columns: 1fr; }
@@ -1018,7 +1103,14 @@ function heroCtas(site: SiteConfig, mode: RenderMode): string[] {
   const isProjectsList =
     site.template === "portfolio" || site.template === "films" || site.template === "agency" || site.template === "newsroom";
   const isServicesList =
-    site.template === "business" || site.template === "modern" || site.template === "clinic" || site.template === "profile" || site.template === "dashboard";
+    site.template === "business" ||
+    site.template === "modern" ||
+    site.template === "clinic" ||
+    site.template === "profile" ||
+    site.template === "dashboard" ||
+    site.template === "fitness" ||
+    site.template === "saas" ||
+    site.template === "law";
   const isJobsList = site.template === "hr";
   const listPage: PageId = isProjectsList ? "gallery" : isJobsList ? "jobs" : "menu";
   const hasListPage = site.pages.includes(listPage);
@@ -1129,12 +1221,28 @@ function modalAttrs(title: string, meta: string, desc: string, ctaHref = "", cta
   return `data-modal ${parts.join(" ")}`;
 }
 
+/**
+ * Resolve a card's optional "link" field. Accepts a page of this site (built-in
+ * id or custom page id) or any URL the user typed. Empty = "" so the template's
+ * own sensible default CTA is used instead.
+ */
+function cardLinkHref(link: string | undefined, site: SiteConfig, mode: RenderMode): string {
+  const t = (link || "").trim();
+  if (!t) return "";
+  if (isBuiltInPage(t) || site.pages.includes(t)) return pageHref(mode, t);
+  return t;
+}
+
 function menuCard(m: SiteConfig["menu"][number], site: SiteConfig, mode: RenderMode): string {
   const img = (m.image || "").trim() ? `<img class="menu-img" src="${esc((m.image || "").trim())}" alt="" loading="lazy">` : "";
   const shop = site.template === "shop";
   let ctaHref = "";
   let ctaLabel = "";
-  if (shop) {
+  const custom = cardLinkHref(m.link, site, mode);
+  if (custom) {
+    ctaHref = custom;
+    ctaLabel = shop ? "Ask about this" : "Learn more";
+  } else if (shop) {
     ctaHref = site.pages.includes("contact") ? pageHref(mode, "contact") : "";
     ctaLabel = "Ask about this";
   } else if (site.pages.includes("booking")) {
@@ -1179,8 +1287,10 @@ function projectCard(pr: SiteConfig["projects"][number]): string {
 }
 
 function serviceCard(sv: SiteConfig["services"][number], site: SiteConfig, mode: RenderMode): string {
-  const ctaHref = site.pages.includes("contact") ? pageHref(mode, "contact") : "";
-  const open = modalAttrs(sv.title, sv.icon || "", sv.description, ctaHref, "Get a quote");
+  const custom = cardLinkHref(sv.link, site, mode);
+  const ctaHref = custom || (site.pages.includes("contact") ? pageHref(mode, "contact") : "");
+  const ctaLabel = custom ? "Learn more" : "Get a quote";
+  const open = modalAttrs(sv.title, sv.icon || "", sv.description, ctaHref, ctaLabel);
   return `
   <article class="service-card" ${open} tabindex="0" role="button" aria-haspopup="dialog">
     <div class="service-icon">${esc(sv.icon || "•")}</div>
@@ -1207,6 +1317,71 @@ function projectsGrid(site: SiteConfig): string {
   if (site.projects.length === 0)
     return `<p class="section-sub" style="font-style:italic">Work coming soon.</p>`;
   return `<div class="card-grid">${site.projects.map((pr) => projectCard(pr)).join("")}</div>`;
+}
+
+/** Pricing / membership plans: the site's menu items as tier cards. */
+function plansGrid(site: SiteConfig, mode: RenderMode): string {
+  if (site.menu.length === 0)
+    return `<p class="section-sub" style="font-style:italic">Plans coming soon.</p>`;
+  const ctaLabel =
+    site.template === "fitness" ? "Join now" : site.template === "saas" ? "Start free trial" : "Choose plan";
+  const fallback = site.pages.includes("booking")
+    ? pageHref(mode, "booking")
+    : site.pages.includes("contact")
+      ? pageHref(mode, "contact")
+      : "";
+  const middle = Math.floor(site.menu.length / 2);
+  const cards = site.menu
+    .map((m, i) => {
+      const custom = cardLinkHref(m.link, site, mode);
+      const ctaHref = custom || fallback;
+      const open = modalAttrs(m.name, priceHtml(m.price), m.description, ctaHref, ctaLabel);
+      const featured = site.menu.length >= 3 && i === middle;
+      const btn = ctaHref
+        ? `<a class="btn ${featured ? "btn-primary" : "btn-outline"}" href="${esc(ctaHref)}"${custom ? ' target="_blank" rel="noopener"' : ""}>${esc(ctaLabel)}</a>`
+        : "";
+      return `
+  <article class="plan-card${featured ? " is-featured" : ""}" ${open} tabindex="0" role="button" aria-haspopup="dialog">
+    ${featured ? `<span class="plan-flag">Most popular</span>` : ""}
+    <h3 class="plan-name">${esc(m.name)}</h3>
+    <p class="plan-price">${priceHtml(m.price) || "Free"}</p>
+    ${m.description.trim() ? `<p class="plan-desc">${esc(m.description)}</p>` : ""}
+    ${btn}
+  </article>`;
+    })
+    .join("");
+  return `<div class="plans-grid">${cards}</div>`;
+}
+
+/** FAQ list using native <details> — collapsible with zero JavaScript. */
+function faqSection(site: SiteConfig, limit?: number): string {
+  const items = limit ? site.faqs.slice(0, limit) : site.faqs;
+  if (items.length === 0)
+    return `<p class="section-sub" style="font-style:italic">Questions coming soon.</p>`;
+  return `<div class="faq-list">${items
+    .map(
+      (f) => `
+    <details class="faq-item">
+      <summary>${esc(f.question)}</summary>
+      <div class="faq-answer">${paragraphs(f.answer)}</div>
+    </details>`
+    )
+    .join("")}</div>`;
+}
+
+/** Client quotes. Rendered as-is (no dialog) so the full quote is always visible. */
+function testimonialsBand(site: SiteConfig, limit?: number): string {
+  const items = limit ? site.testimonials.slice(0, limit) : site.testimonials;
+  if (items.length === 0) return "";
+  return `<div class="quote-grid">${items
+    .map(
+      (t) => `
+    <figure class="quote-card">
+      <blockquote>${esc(t.quote)}</blockquote>
+      <figcaption>${esc(t.author)}${t.role.trim() ? ` — ${esc(t.role)}` : ""}</figcaption>
+    </figure>`
+    )
+    .join("")}</div>`;
 }
 
 /** Bank-style accounts page: an institutional fee/rate table instead of cards. */
@@ -1245,7 +1420,14 @@ function featuredSection(site: SiteConfig, mode: RenderMode): string {
   const isProjectsList =
     site.template === "portfolio" || site.template === "films" || site.template === "agency" || site.template === "newsroom";
   const isServicesList =
-    site.template === "business" || site.template === "modern" || site.template === "clinic" || site.template === "profile" || site.template === "dashboard";
+    site.template === "business" ||
+    site.template === "modern" ||
+    site.template === "clinic" ||
+    site.template === "profile" ||
+    site.template === "dashboard" ||
+    site.template === "fitness" ||
+    site.template === "saas" ||
+    site.template === "law";
   const isJobsList = site.template === "hr";
   const listKey: "projects" | "services" | "menu" | "jobs" = isProjectsList
     ? "projects"
@@ -1300,6 +1482,9 @@ function homeBody(site: SiteConfig, mode: RenderMode): string {
   if (site.template === "agency") return agencyHome(site, mode);
   if (site.template === "newsroom") return newsroomHome(site, mode);
   if (site.template === "dashboard") return dashboardHome(site, mode);
+  if (site.template === "fitness") return fitnessHome(site, mode);
+  if (site.template === "saas") return saasHome(site, mode);
+  if (site.template === "law") return lawHome(site, mode);
   const meta = templateMeta(site.template);
   const promo = meta.promo ? `<div class="promo-strip" role="banner">${esc(meta.promo)}</div>` : "";
   const stats =
@@ -1309,6 +1494,74 @@ function homeBody(site: SiteConfig, mode: RenderMode): string {
           .join("")}</div></div></section>`
       : "";
   return `${promo}${heroHtml(site, mode)}${stats}${featureChips(site)}${featuredSection(site, mode)}${aboutTeaser(site, mode)}`;
+}
+
+/** Fitness homepage — big statement, benefits, plans, client quotes. */
+function fitnessHome(site: SiteConfig, mode: RenderMode): string {
+  const meta = templateMeta(site.template);
+  const stats =
+    meta.stats && meta.stats.length
+      ? `<section class="stats-strip"><div class="container"><div class="stats-row">${meta.stats
+          .map((s) => `<div class="stat"><span class="stat-value">${esc(s.value)}</span><span class="stat-label">${esc(s.label)}</span></div>`)
+          .join("")}</div></div></section>`
+      : "";
+  const quotes = testimonialsBand(site, 3);
+  return `
+${meta.promo ? `<div class="promo-strip" role="banner">${esc(meta.promo)}</div>` : ""}
+${heroHtml(site, mode)}
+${stats}
+${featuredSection(site, mode)}
+<section class="section" id="plans">
+  <div class="container">
+    <h2 class="section-head">Choose your plan</h2>
+    <p class="section-sub">Every plan starts with a free movement screen — no card needed.</p>
+    ${plansGrid(site, mode)}
+  </div>
+</section>
+${quotes ? `<section class="section quotes-band"><div class="container">${quotes}</div></section>` : ""}
+${aboutTeaser(site, mode)}`;
+}
+
+/** SaaS homepage — hero, proof stats, features, pricing, FAQ, quotes. */
+function saasHome(site: SiteConfig, mode: RenderMode): string {
+  const meta = templateMeta(site.template);
+  const stats =
+    meta.stats && meta.stats.length
+      ? `<section class="stats-strip"><div class="container"><div class="stats-row">${meta.stats
+          .map((s) => `<div class="stat"><span class="stat-value">${esc(s.value)}</span><span class="stat-label">${esc(s.label)}</span></div>`)
+          .join("")}</div></div></section>`
+      : "";
+  return `
+${heroHtml(site, mode)}
+${stats}
+${featuredSection(site, mode)}
+<section class="section" id="pricing">
+  <div class="container">
+    <h2 class="section-head">Simple pricing</h2>
+    <p class="section-sub">Start free. Upgrade when your team outgrows it.</p>
+    ${plansGrid(site, mode)}
+  </div>
+</section>
+${site.faqs.length ? `<section class="section" id="faq"><div class="container"><h2 class="section-head">Questions, answered</h2>${faqSection(site, 4)}</div></section>` : ""}
+${testimonialsBand(site, 3)}`;
+}
+
+/** Law-firm homepage — restrained hero, practice areas, firm story, quotes, FAQ. */
+function lawHome(site: SiteConfig, mode: RenderMode): string {
+  const meta = templateMeta(site.template);
+  const stats =
+    meta.stats && meta.stats.length
+      ? `<section class="stats-strip"><div class="container"><div class="stats-row">${meta.stats
+          .map((s) => `<div class="stat"><span class="stat-value">${esc(s.value)}</span><span class="stat-label">${esc(s.label)}</span></div>`)
+          .join("")}</div></div></section>`
+      : "";
+  return `
+${heroHtml(site, mode)}
+${stats}
+${featuredSection(site, mode)}
+${aboutTeaser(site, mode)}
+${testimonialsBand(site, 3)}
+${site.faqs.length ? `<section class="section" id="faq"><div class="container"><h2 class="section-head">Common questions</h2>${faqSection(site, 4)}</div></section>` : ""}`;
 }
 
 /** Agency homepage — Story-style: full-screen statement, then alternating text/visual blocks. */
@@ -1521,7 +1774,7 @@ function avatarInitials(name: string): string {
   );
 }
 
-function teamBody(site: SiteConfig): string {
+function teamBody(site: SiteConfig, mode: RenderMode): string {
   const title = pageLabel(site.template, "team");
   if (site.team.length === 0) {
     return `
@@ -1533,15 +1786,17 @@ function teamBody(site: SiteConfig): string {
 </section>`;
   }
   const cards = site.team
-    .map(
-      (t) => `
-    <article class="team-card" ${modalAttrs(t.name, t.role, t.bio)} tabindex="0" role="button" aria-haspopup="dialog">
+    .map((t) => {
+      const custom = cardLinkHref(t.link, site, mode);
+      const open = modalAttrs(t.name, t.role, t.bio, custom, "Learn more");
+      return `
+    <article class="team-card" ${open} tabindex="0" role="button" aria-haspopup="dialog">
       <span class="team-avatar" aria-hidden="true">${esc(avatarInitials(t.name))}</span>
       <h3>${esc(t.name)}</h3>
       <p class="team-role">${esc(t.role)}</p>
       ${t.bio.trim() ? `<p class="team-bio">${esc(t.bio.trim())}</p>` : ""}
-    </article>`
-    )
+    </article>`;
+    })
     .join("");
   return `
 <section class="section">
@@ -1576,6 +1831,78 @@ function jobsGrid(site: SiteConfig): string {
   return `<div class="jobs-list">${site.jobs.map((j) => jobCard(site, j)).join("")}</div>`;
 }
 
+function pricingBody(site: SiteConfig, mode: RenderMode): string {
+  const title = pageLabel(site.template, "pricing");
+  const sub =
+    site.template === "fitness"
+      ? "Pick the plan that fits your week. Every plan starts with a free movement screen."
+      : site.template === "saas"
+        ? "Start free, upgrade when your team does. No hidden fees, cancel any time."
+        : "Clear plans, clear prices — no surprises at checkout.";
+  return `
+<section class="section">
+  <div class="container">
+    <h2 class="section-head">${esc(title)}</h2>
+    <p class="section-sub">${esc(sub)}</p>
+    ${plansGrid(site, mode)}
+  </div>
+</section>`;
+}
+
+function faqBody(site: SiteConfig): string {
+  const title = pageLabel(site.template, "faq");
+  return `
+<section class="section">
+  <div class="container">
+    <h2 class="section-head">${esc(title)}</h2>
+    <p class="section-sub">The things people ask most — answered honestly.</p>
+    ${faqSection(site)}
+  </div>
+</section>`;
+}
+
+function testimonialsBody(site: SiteConfig): string {
+  const title = pageLabel(site.template, "testimonials");
+  return `
+<section class="section">
+  <div class="container">
+    <h2 class="section-head">${esc(title)}</h2>
+    <p class="section-sub">In their words, not ours.</p>
+    ${testimonialsBand(site)}
+  </div>
+</section>`;
+}
+
+/** News / journal: the site's projects rendered as a stacked post list. */
+function newsBody(site: SiteConfig): string {
+  const title = pageLabel(site.template, "news");
+  const posts = site.projects
+    .map((pr) => {
+      const img = (pr.image || "").trim() ? `<img class="news-img" src="${esc((pr.image || "").trim())}" alt="" loading="lazy">` : "";
+      const link = (pr.link || "").trim()
+        ? `<a class="link" href="${esc((pr.link || "").trim())}" target="_blank" rel="noopener">Read more →</a>`
+        : "";
+      const open = modalAttrs(pr.title, "", pr.description, (pr.link || "").trim(), "Read more");
+      return `
+    <article class="news-item" ${open} tabindex="0" role="button" aria-haspopup="dialog">
+      ${img}
+      <div class="news-body">
+        <h3>${esc(pr.title)}</h3>
+        ${pr.description.trim() ? `<p>${esc(pr.description)}</p>` : ""}
+        ${link}
+      </div>
+    </article>`;
+    })
+    .join("");
+  return `
+<section class="section">
+  <div class="container">
+    <h2 class="section-head">${esc(title)}</h2>
+    ${posts || `<p class="section-sub" style="font-style:italic">Posts coming soon.</p>`}
+  </div>
+</section>`;
+}
+
 function jobsBody(site: SiteConfig): string {
   const title = pageLabel(site.template, "jobs");
   if (site.jobs.length === 0) {
@@ -1591,7 +1918,11 @@ function jobsBody(site: SiteConfig): string {
 <section class="section">
   <div class="container">
     <h2 class="section-head">${esc(title)}</h2>
-    <p class="section-sub">Pick a role — or send us your CV and we’ll match you for free.</p>
+    <p class="section-sub">${
+      site.template === "hr"
+        ? "Pick a role — or send us your CV and we’ll match you for free."
+        : "Open roles, honest salary bands and a short process."
+    }</p>
     ${jobsGrid(site)}
   </div>
 </section>`;
@@ -2020,7 +2351,19 @@ function renderBody(pageRef: string, site: SiteConfig, mode: RenderMode): string
       inner = galleryBody(site);
       break;
     case "team":
-      inner = teamBody(site);
+      inner = teamBody(site, mode);
+      break;
+    case "pricing":
+      inner = pricingBody(site, mode);
+      break;
+    case "faq":
+      inner = faqBody(site);
+      break;
+    case "testimonials":
+      inner = testimonialsBody(site);
+      break;
+    case "news":
+      inner = newsBody(site);
       break;
     case "booking":
       inner = bookingBody(site);
@@ -2033,6 +2376,30 @@ function renderBody(pageRef: string, site: SiteConfig, mode: RenderMode): string
       break;
   }
   return `<main>${inner}</main>`;
+}
+
+/**
+ * Which content list a built-in page displays. The builder uses this to show
+ * exactly the editors a site needs, so panel contents and rendered pages can
+ * never drift apart.
+ */
+export function pageListKind(
+  page: PageId,
+  template: TemplateId
+): "menu" | "services" | "projects" | "jobs" | "team" | "faqs" | "testimonials" | null {
+  if (page === "menu") {
+    if (template === "business" || template === "modern" || template === "clinic" || template === "profile")
+      return "services";
+    if (template === "portfolio") return "projects";
+    return "menu";
+  }
+  if (page === "gallery" || page === "news") return "projects";
+  if (page === "jobs") return "jobs";
+  if (page === "team") return "team";
+  if (page === "pricing") return "menu"; // plans are priced menu items
+  if (page === "faq") return "faqs";
+  if (page === "testimonials") return "testimonials";
+  return null;
 }
 
 /** Render one complete HTML page document. Mode "file" is export-ready. */

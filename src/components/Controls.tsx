@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type {
   CustomPage,
+  FaqItem,
   JobItem,
   MenuItem,
   PageId,
@@ -12,11 +13,11 @@ import type {
   TeamItem,
   TemplateId,
 } from "../lib/types";
-import { ALL_PAGES, FEATURE_META, isBuiltInPage, SOCIAL_META } from "../lib/types";
+import { ALL_PAGES, FEATURE_META, isBuiltInPage, PAGE_HINTS, SOCIAL_META } from "../lib/types";
 import { PALETTES } from "../lib/palettes";
 import { TEMPLATE_ORDER, templateMeta, pageLabel } from "../lib/templates";
 import { createSite } from "../lib/sample";
-import { slugify } from "../lib/render";
+import { slugify, pageListKind } from "../lib/render";
 import { Section, Field, TextInput, TextArea, Switch, ImageField, ColorField, Segmented } from "./ui";
 
 export type SiteUpdater = Partial<SiteConfig> | ((prev: SiteConfig) => SiteConfig);
@@ -391,7 +392,12 @@ function PagesPanel({
         <div className="add-pages">
           <span className="add-pages-label">Add a page:</span>
           {disabledBuiltIns.map((id) => (
-            <button key={id} className="btn btn-mini" onClick={() => toggleBuiltIn(id, true)}>
+            <button
+              key={id}
+              className="btn btn-mini"
+              title={PAGE_HINTS[id]}
+              onClick={() => toggleBuiltIn(id, true)}
+            >
               + {pageLabel(site.template, id)}
             </button>
           ))}
@@ -545,6 +551,11 @@ function FeaturesPanel({
 
 /* ------------------------------------------------ Template content (menu/services/work/team/jobs) */
 
+/**
+ * The content editors a site needs: whatever its template ships with, plus
+ * whatever the user's chosen pages require (add a Pricing page and the plan
+ * editor appears; add a News page and the posts editor appears).
+ */
 function ContentPanel({
   site,
   update,
@@ -553,14 +564,218 @@ function ContentPanel({
   update: (u: SiteUpdater) => void;
 }) {
   const t = site.template;
+  const needs = new Set<string>();
+  // What the template shows out of the box.
+  if (t === "portfolio" || t === "films" || t === "agency" || t === "newsroom") needs.add("projects");
+  if (["business", "modern", "clinic", "profile", "dashboard", "fitness", "saas", "law"].includes(t))
+    needs.add("services");
+  if (["restaurant", "shop", "bank", "dashboard", "fitness", "saas"].includes(t)) needs.add("menu");
+  if (["clinic", "films", "modern", "dashboard", "fitness", "law"].includes(t)) needs.add("team");
+  if (t === "hr") needs.add("jobs");
+  // What the user's pages need.
+  for (const ref of site.pages) {
+    if (!isBuiltInPage(ref)) continue;
+    const kind = pageListKind(ref, t);
+    if (kind) needs.add(kind);
+  }
+
   const parts: React.ReactNode[] = [];
   let num = 7;
-  if (t === "portfolio" || t === "films" || t === "agency" || t === "newsroom") parts.push(<ProjectsPanel key="projects" site={site} update={update} num={num++} />);
-  if (t === "business" || t === "modern" || t === "clinic" || t === "profile" || t === "dashboard") parts.push(<ServicesPanel key="services" site={site} update={update} num={num++} />);
-  if (t === "restaurant" || t === "shop" || t === "bank" || t === "dashboard") parts.push(<MenuPanel key="menu" site={site} update={update} num={num++} />);
-  if (t === "clinic" || t === "films" || t === "modern" || t === "agency" || t === "dashboard") parts.push(<TeamPanel key="team" site={site} update={update} num={num++} />);
-  if (t === "hr") parts.push(<JobsPanel key="jobs" site={site} update={update} num={num++} />);
+  if (needs.has("menu"))
+    parts.push(<MenuPanel key="menu" site={site} update={update} num={num++} />);
+  if (needs.has("services"))
+    parts.push(<ServicesPanel key="services" site={site} update={update} num={num++} />);
+  if (needs.has("projects"))
+    parts.push(<ProjectsPanel key="projects" site={site} update={update} num={num++} />);
+  if (needs.has("team")) parts.push(<TeamPanel key="team" site={site} update={update} num={num++} />);
+  if (needs.has("jobs")) parts.push(<JobsPanel key="jobs" site={site} update={update} num={num++} />);
+  if (needs.has("faqs")) parts.push(<FaqsPanel key="faqs" site={site} update={update} num={num++} />);
+  if (needs.has("testimonials"))
+    parts.push(<TestimonialsPanel key="testimonials" site={site} update={update} num={num++} />);
   return <>{parts}</>;
+}
+
+/**
+ * "Where does this card's button go?" — pick any page of this site or type an
+ * external URL. Empty means "use the template's default" (e.g. Book this).
+ */
+function CardLinkField({
+  value,
+  site,
+  onChange,
+  label = "Button link",
+}: {
+  value: string | undefined;
+  site: SiteConfig;
+  onChange: (v: string) => void;
+  label?: string;
+}) {
+  const v = (value || "").trim();
+  const isPage = site.pages.includes(v);
+  return (
+    <Field
+      label={label}
+      hint="Optional. Pick a page of your site, or type any link — leave empty for the default."
+    >
+      <div className="stack">
+        <select
+          className="input select"
+          value={isPage ? v : v ? "__url__" : ""}
+          onChange={(e) => onChange(e.target.value === "__url__" ? "" : e.target.value)}
+        >
+          <option value="">No link (use default)</option>
+          {site.pages.map((ref) => (
+            <option key={ref} value={ref}>
+              {isBuiltInPage(ref)
+                ? pageLabel(site.template, ref)
+                : site.customPages.find((c) => c.id === ref)?.title || ref}
+            </option>
+          ))}
+          <option value="__url__">Custom link…</option>
+        </select>
+        {!isPage && v ? (
+          <input
+            className="input"
+            placeholder="https://… or mailto:…"
+            value={v}
+            onChange={(e) => onChange(e.target.value)}
+          />
+        ) : null}
+      </div>
+    </Field>
+  );
+}
+
+function FaqsPanel({
+  site,
+  update,
+  num,
+}: {
+  site: SiteConfig;
+  update: (u: SiteUpdater) => void;
+  num: number;
+}) {
+  function setItem(id: string, patch: Partial<FaqItem>) {
+    update((prev) => ({ ...prev, faqs: prev.faqs.map((f) => (f.id === id ? { ...f, ...patch } : f)) }));
+  }
+  return (
+    <Section title={`${num} · ${pageLabel(site.template, "faq")}`} sub="The questions you get asked most.">
+      <div className="stack menu-edit">
+        {site.faqs.map((f) => (
+          <div key={f.id} className="menu-edit-card">
+            <div className="menu-edit-row">
+              <input
+                className="input"
+                value={f.question}
+                placeholder="Question"
+                onChange={(e) => setItem(f.id, { question: e.target.value })}
+              />
+              <button
+                className="icon-btn"
+                title="Remove question"
+                aria-label={`Remove ${f.question || "question"}`}
+                onClick={() => update((prev) => ({ ...prev, faqs: prev.faqs.filter((x) => x.id !== f.id) }))}
+              >
+                ✕
+              </button>
+            </div>
+            <textarea
+              className="input textarea"
+              rows={2}
+              value={f.answer}
+              placeholder="Your answer"
+              onChange={(e) => setItem(f.id, { answer: e.target.value })}
+            />
+          </div>
+        ))}
+        {site.faqs.length === 0 && <p className="empty-note">No questions yet — add the first one below.</p>}
+        <button
+          className="btn btn-outline btn-block"
+          onClick={() =>
+            update((prev) => ({
+              ...prev,
+              faqs: [...prev.faqs, { id: newId(), question: "New question?", answer: "" }],
+            }))
+          }
+        >
+          + Add question
+        </button>
+      </div>
+    </Section>
+  );
+}
+
+function TestimonialsPanel({
+  site,
+  update,
+  num,
+}: {
+  site: SiteConfig;
+  update: (u: SiteUpdater) => void;
+  num: number;
+}) {
+  function setItem(id: string, patch: Partial<SiteConfig["testimonials"][number]>) {
+    update((prev) => ({
+      ...prev,
+      testimonials: prev.testimonials.map((t) => (t.id === id ? { ...t, ...patch } : t)),
+    }));
+  }
+  return (
+    <Section
+      title={`${num} · ${pageLabel(site.template, "testimonials")}`}
+      sub="What clients say — shown as quotes."
+    >
+      <div className="stack menu-edit">
+        {site.testimonials.map((t) => (
+          <div key={t.id} className="menu-edit-card">
+            <textarea
+              className="input textarea"
+              rows={2}
+              value={t.quote}
+              placeholder="Their words"
+              onChange={(e) => setItem(t.id, { quote: e.target.value })}
+            />
+            <div className="menu-edit-row">
+              <input
+                className="input"
+                value={t.author}
+                placeholder="Who said it"
+                onChange={(e) => setItem(t.id, { author: e.target.value })}
+              />
+              <input
+                className="input"
+                value={t.role}
+                placeholder="Context (optional)"
+                onChange={(e) => setItem(t.id, { role: e.target.value })}
+              />
+              <button
+                className="icon-btn"
+                title="Remove quote"
+                aria-label={`Remove quote by ${t.author || "client"}`}
+                onClick={() =>
+                  update((prev) => ({ ...prev, testimonials: prev.testimonials.filter((x) => x.id !== t.id) }))
+                }
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        ))}
+        {site.testimonials.length === 0 && <p className="empty-note">No quotes yet — add the first one below.</p>}
+        <button
+          className="btn btn-outline btn-block"
+          onClick={() =>
+            update((prev) => ({
+              ...prev,
+              testimonials: [...prev.testimonials, { id: newId(), quote: "", author: "", role: "" }],
+            }))
+          }
+        >
+          + Add quote
+        </button>
+      </div>
+    </Section>
+  );
 }
 
 function MenuPanel({
@@ -584,18 +799,21 @@ function MenuPanel({
   function addItem() {
     update((prev) => ({
       ...prev,
-      menu: [...prev.menu, { id: newId(), name: "New dish", description: "", price: "", image: "" }],
+      menu: [...prev.menu, { id: newId(), name: "New dish", description: "", price: "", image: "", link: "" }],
     }));
   }
+  const listPage: PageId = site.pages.includes("pricing") ? "pricing" : "menu";
   return (
     <Section
-      title={`${num} · ${pageLabel(site.template, "menu")}`}
+      title={`${num} · ${pageLabel(site.template, listPage)}`}
       sub={
-        site.template === "bank"
-          ? "Accounts & cards — put the rate or fee in the price."
-          : site.template === "shop"
-            ? "Products & prices — a photo makes the card pop."
-            : "Dishes, prices and photos."
+        listPage === "pricing"
+          ? "Plans, packages or tiers — the price goes in the price box."
+          : site.template === "bank"
+            ? "Accounts & cards — put the rate or fee in the price."
+            : site.template === "shop"
+              ? "Products & prices — a photo makes the card pop."
+              : "Dishes, prices and photos."
       }
     >
       <div className="stack menu-edit">
@@ -632,19 +850,29 @@ function MenuPanel({
               placeholder="Short description"
               onChange={(e) => setItem(m.id, { description: e.target.value })}
             />
+            <CardLinkField value={m.link} site={site} onChange={(link) => setItem(m.id, { link })} />
           </div>
         ))}
         {site.menu.length === 0 && (
           <p className="empty-note">
-            {site.template === "bank"
-              ? "No accounts yet — add your first one below."
-              : site.template === "shop"
-                ? "No products yet — add your first one below."
-                : "No dishes yet — add your first one below."}
+            {listPage === "pricing"
+              ? "No plans yet — add your first one below."
+              : site.template === "bank"
+                ? "No accounts yet — add your first one below."
+                : site.template === "shop"
+                  ? "No products yet — add your first one below."
+                  : "No dishes yet — add your first one below."}
           </p>
         )}
         <button className="btn btn-outline btn-block" onClick={addItem}>
-          + Add {site.template === "bank" ? "account" : site.template === "shop" ? "product" : "dish"}
+          + Add{" "}
+          {listPage === "pricing"
+            ? "plan"
+            : site.template === "bank"
+              ? "account"
+              : site.template === "shop"
+                ? "product"
+                : "dish"}
         </button>
       </div>
     </Section>
@@ -749,12 +977,21 @@ function ServicesPanel({
   function addItem() {
     update((prev) => ({
       ...prev,
-      services: [...prev.services, { id: newId(), title: "New service", description: "", icon: "✨" }],
+      services: [...prev.services, { id: newId(), title: "New service", description: "", icon: "✨", link: "" }],
     }));
   }
+  const listPage: PageId = site.pages.includes("menu") ? "menu" : "home";
+  const heading =
+    site.template === "fitness"
+      ? "Benefits of training"
+      : site.template === "law"
+        ? "Practice areas"
+        : site.template === "saas"
+          ? "Features"
+          : pageLabel(site.template, listPage);
   return (
     <Section
-      title={`${num} · ${pageLabel(site.template, "menu")}`}
+      title={`${num} · ${heading}`}
       sub={
         site.template === "clinic"
           ? "Departments patients can book into — add an emoji icon for each."
@@ -794,6 +1031,7 @@ function ServicesPanel({
               placeholder="Short description"
               onChange={(e) => setItem(m.id, { description: e.target.value })}
             />
+            <CardLinkField value={m.link} site={site} onChange={(link) => setItem(m.id, { link })} />
           </div>
         ))}
         {site.services.length === 0 && <p className="empty-note">No services yet — add one below.</p>}
@@ -826,7 +1064,7 @@ function TeamPanel({
   function addItem() {
     update((prev) => ({
       ...prev,
-      team: [...prev.team, { id: newId(), name: "New member", role: "", bio: "" }],
+      team: [...prev.team, { id: newId(), name: "New member", role: "", bio: "", link: "" }],
     }));
   }
   return (
@@ -863,6 +1101,7 @@ function TeamPanel({
               placeholder="Short bio"
               onChange={(e) => setItem(m.id, { bio: e.target.value })}
             />
+            <CardLinkField value={m.link} site={site} onChange={(link) => setItem(m.id, { link })} />
           </div>
         ))}
         {site.team.length === 0 && <p className="empty-note">No team members yet — add one below.</p>}

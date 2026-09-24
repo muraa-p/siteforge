@@ -20,7 +20,10 @@ export type TemplateId =
   | "hr"
   | "agency"
   | "newsroom"
-  | "dashboard";
+  | "dashboard"
+  | "fitness"
+  | "saas"
+  | "law";
 
 /** Text alignment choices exposed to users (headlines, buttons, sections). */
 export type TextAlign = "left" | "center" | "right";
@@ -30,7 +33,24 @@ export function isTextAlign(v: unknown): v is TextAlign {
   return v === "left" || v === "center" || v === "right";
 }
 
-export type PageId = "home" | "about" | "menu" | "gallery" | "contact" | "team" | "booking" | "jobs";
+/**
+ * Every page type a user can switch on. `pages` holds the enabled ones in
+ * display order, so adding a type here automatically offers it in the
+ * builder's "Add a page" row — users compose their own site from these parts.
+ */
+export type PageId =
+  | "home"
+  | "about"
+  | "menu"
+  | "gallery"
+  | "contact"
+  | "team"
+  | "booking"
+  | "jobs"
+  | "pricing"
+  | "faq"
+  | "testimonials"
+  | "news";
 
 /**
  * A page reference: either a built-in page id ("home", "about", …) or the id
@@ -63,7 +83,17 @@ export interface CustomPage {
   align: TextAlign;
 }
 
-export type PaletteId = "ember" | "ocean" | "forest" | "rose" | "midnight" | "slate" | "noir" | "paper" | "graphite";
+export type PaletteId =
+  | "ember"
+  | "ocean"
+  | "forest"
+  | "rose"
+  | "midnight"
+  | "slate"
+  | "noir"
+  | "paper"
+  | "graphite"
+  | "pulse";
 
 export interface MenuItem {
   id: string;
@@ -72,6 +102,8 @@ export interface MenuItem {
   price: string;
   /** Data URL or web URL; empty = no image. */
   image: string;
+  /** Optional "read more"/"buy" target: a page of this site or any URL. */
+  link?: string;
 }
 
 export interface ProjectItem {
@@ -89,6 +121,24 @@ export interface ServiceItem {
   description: string;
   /** Emoji icon, e.g. "✂️". */
   icon: string;
+  /** Optional target for the card's button: a page of this site or any URL. */
+  link?: string;
+}
+
+/** A question + answer pair for the FAQ page. */
+export interface FaqItem {
+  id: string;
+  question: string;
+  answer: string;
+}
+
+/** A client quote for the testimonials page / band. */
+export interface TestimonialItem {
+  id: string;
+  quote: string;
+  author: string;
+  /** Optional attribution, e.g. "Client since 2023" or a job title. */
+  role: string;
 }
 
 export interface ContactInfo {
@@ -148,6 +198,8 @@ export interface TeamItem {
   name: string;
   role: string;
   bio: string;
+  /** Optional target for the card's button: a page of this site or any URL. */
+  link?: string;
 }
 
 /** A job opening shown on the "jobs" page. */
@@ -189,8 +241,12 @@ export interface SiteConfig {
   services: ServiceItem[];
   /** People shown on the team page (doctors, crew, employees…). */
   team: TeamItem[];
-  /** Job openings shown on the jobs page (recruitment agency). */
+  /** Job openings shown on the jobs page (recruitment agency, careers page). */
   jobs: JobItem[];
+  /** Questions + answers for the FAQ page. */
+  faqs: FaqItem[];
+  /** Client quotes for the testimonials page / band. */
+  testimonials: TestimonialItem[];
   contact: ContactInfo;
   /** Opening hours, plain text (newlines become line breaks). */
   hours: string;
@@ -201,7 +257,39 @@ export interface SiteConfig {
   buttons: SiteButtons;
 }
 
-export const ALL_PAGES: PageId[] = ["home", "about", "menu", "gallery", "contact", "team", "booking", "jobs"];
+export const ALL_PAGES: PageId[] = [
+  "home",
+  "about",
+  "menu",
+  "gallery",
+  "contact",
+  "team",
+  "booking",
+  "jobs",
+  "pricing",
+  "faq",
+  "testimonials",
+  "news",
+];
+
+/**
+ * Plain-English hint for each page type, shown as a tooltip in the builder so
+ * non-technical users know what they are adding before they add it.
+ */
+export const PAGE_HINTS: Record<PageId, string> = {
+  home: "The first page people see: your headline, intro and buttons.",
+  about: "Your story — who you are and why you exist.",
+  menu: "Things you sell or serve, with prices.",
+  gallery: "A grid of photos or past work.",
+  contact: "Address, phone, email, map and contact form.",
+  team: "The people behind the business.",
+  booking: "A request form — appointments, quotes or session bookings.",
+  jobs: "Roles you are hiring for.",
+  pricing: "Plans, packages or membership tiers with prices.",
+  faq: "Questions people ask, with your answers.",
+  testimonials: "What clients say about you.",
+  news: "Posts, articles or announcements.",
+};
 
 export const FEATURE_META: Array<{
   key: keyof Features;

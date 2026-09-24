@@ -5,8 +5,8 @@
 
 import { createSite, normalizeSite, createSampleSite } from "../src/lib/sample";
 import { TEMPLATE_ORDER, pageLabel } from "../src/lib/templates";
-import { ALL_PAGES } from "../src/lib/types";
-import { renderPage, renderFullApp, buildSiteFiles, slugify, esc } from "../src/lib/render";
+import { ALL_PAGES, PAGE_HINTS, type PageRef } from "../src/lib/types";
+import { renderPage, renderFullApp, buildSiteFiles, slugify, esc, pageFile, pageListKind } from "../src/lib/render";
 
 let failures = 0;
 function check(name: string, ok: boolean, detail?: string) {
@@ -444,6 +444,87 @@ paperSite.palette = "paper";
 const graphiteSite = createSite("restaurant");
 graphiteSite.palette = "graphite";
 check("paper + graphite palettes exist", renderPage("home", paperSite, "file").includes("--accent: #B91C1C") && renderPage("home", graphiteSite, "file").includes("--accent: #0F766E"));
+
+// --- new template: Fitness Coach (plans, benefits, booking) ---
+const fit = createSite("fitness");
+const fitHome = renderPage("home", fit, "file");
+check("fitness defaults to the pulse palette", fit.palette === "pulse");
+check("fitness home shows benefits + plans", fitHome.includes("Benefits of training") && fitHome.includes('class="plans-grid"'));
+check("fitness home shows client quotes", fitHome.includes('class="quote-card"') && fitHome.includes("Hanna"));
+check("fitness pricing page is Plans", renderPage("pricing", fit, "file").includes(">Plans</h2>") && renderPage("pricing", fit, "file").includes("plan-price"));
+check("fitness flags the middle plan as most popular", renderPage("pricing", fit, "file").includes("Most popular") && renderPage("pricing", fit, "file").includes("is-featured"));
+check("fitness plan buttons say Join now", renderPage("pricing", fit, "file").includes("Join now"));
+check("fitness booking page is Book a session", renderPage("booking", fit, "file").includes("Book a session"));
+check("fitness FAQ is available but not forced on", !fit.pages.includes("faq") && fit.faqs.length >= 4 && renderPage("faq", fit, "file").includes("<details class=\"faq-item\""));
+
+// --- new template: SaaS Landing (pricing + FAQ + features) ---
+const saasSite = createSite("saas");
+const saasHome = renderPage("home", saasSite, "file");
+check("saas home has features, pricing and FAQ", saasHome.includes("Everything you need") && saasHome.includes('class="plans-grid"') && saasHome.includes("faq-list"));
+check("saas home is centred", saasHome.includes('class="hero align-center"') || saasHome.includes("text-align:center"));
+check("saas pricing tiers render", renderPage("pricing", saasSite, "file").includes("Start free trial") && renderPage("pricing", saasSite, "file").includes("29 / user / month"));
+check("saas FAQ page lists every question", saasSite.faqs.every((f) => renderPage("faq", saasSite, "file").includes(f.question.slice(0, 20))));
+
+// --- new template: Law Firm (practice areas, attorneys, FAQ) ---
+const lawSite = createSite("law");
+const lawHome = renderPage("home", lawSite, "file");
+check("law home shows practice areas", lawHome.includes("Practice areas") && lawHome.includes("Commercial litigation"));
+check("law home shows quotes + FAQ", lawHome.includes('class="quote-card"') && lawHome.includes("faq-list"));
+check("law team page is Attorneys", renderPage("team", lawSite, "file").includes(">Attorneys</h2>") && renderPage("team", lawSite, "file").includes("Margaret Hale"));
+
+// --- new page types can be added to ANY template ---
+const flex = createSite("business");
+flex.pages = [...flex.pages, "pricing", "faq", "testimonials", "news"] as PageRef[];
+flex.faqs = [{ id: "q", question: "Do you offer refunds?", answer: "Yes, within 30 days." }];
+flex.testimonials = [{ id: "q", quote: "Fantastic work, always on time.", author: "Jo", role: "Client" }];
+const flexPricing = renderPage("pricing", flex, "file");
+check("pricing page shows a placeholder when there are no plans", flexPricing.includes("Plans coming soon."));
+const priced = createSite("restaurant");
+priced.pages = [...priced.pages, "pricing"] as PageRef[];
+const pricedHtml = renderPage("pricing", priced, "file");
+check("pricing page works on any template", pricedHtml.includes('class="plan-card') && pricedHtml.includes("Choose plan"));
+check("faq page uses native <details> (no JS needed)", renderPage("faq", flex, "file").includes("<details class=\"faq-item\"") && renderPage("faq", flex, "file").includes("Do you offer refunds?"));
+check("testimonials page renders quotes", renderPage("testimonials", flex, "file").includes("Fantastic work, always on time."));
+const flexNews = createSite("business");
+flexNews.pages = [...flexNews.pages, "news"] as PageRef[];
+flexNews.projects = [{ id: "p", title: "New client", description: "We launched their new site.", image: "", link: "https://example.com" }];
+const newsHtml = renderPage("news", flexNews, "file");
+check("news page lists posts with read-more links", newsHtml.includes('class="news-item"') && newsHtml.includes("We launched their new site.") && newsHtml.includes("Read more"));
+check("new pages export with sensible file names", pageFile("pricing") === "pricing.html" && pageFile("faq") === "faq.html" && pageFile("testimonials") === "testimonials.html" && pageFile("news") === "news.html");
+
+// --- per-card links: cards can lead anywhere the user wants ---
+const linked = createSite("business");
+linked.services = [
+  { id: "s", title: "External", description: "Links out", icon: "🔗", link: "https://example.com/offers" },
+  { id: "s2", title: "Internal", description: "Links to a page", icon: "🏠", link: "contact" },
+  { id: "s3", title: "No link", description: "Uses the default", icon: "•" },
+];
+const linkedHtml = renderPage("home", linked, "file");
+check("card link to an external URL is used", linkedHtml.includes('data-cta="https://example.com/offers"') && linkedHtml.includes('data-cta-label="Learn more"'));
+check("card link to one of your pages is used", linkedHtml.includes('data-cta="./contact.html"'));
+const linkedMenu = createSite("restaurant");
+linkedMenu.menu = [{ id: "m", name: "Tasting menu", description: "Nine courses", price: "95", image: "", link: "booking" }];
+linkedMenu.pages = [...linkedMenu.pages, "booking"] as PageRef[];
+check("menu card can link to your booking page", renderPage("home", linkedMenu, "file").includes('data-cta="./booking.html"'));
+const linkedTeam = createSite("clinic");
+linkedTeam.team = [{ id: "t", name: "Dr. Who", role: "Consultant", bio: "Bio", link: "https://example.com/who" }];
+check("team card can link out", renderPage("team", linkedTeam, "file").includes('data-cta="https://example.com/who"'));
+check("no link = the template default CTA", renderPage("home", createSite("clinic"), "file").includes('data-cta="./contact.html" data-cta-label="Get a quote"'));
+
+// --- old drafts (before links/faqs/quotes existed) still render ---
+const oldDraft = JSON.parse(JSON.stringify(createSite("restaurant"))) as Record<string, unknown>;
+delete oldDraft.faqs;
+delete oldDraft.testimonials;
+(oldDraft.menu as Array<Record<string, unknown>>).forEach((m) => delete m.link);
+(oldDraft.team as Array<Record<string, unknown>>).forEach((t) => delete t.link);
+const oldMigrated = normalizeSite(oldDraft);
+check("old drafts gain faqs + testimonials", oldMigrated.faqs.length === 0 && oldMigrated.testimonials.length === 0);
+check("old drafts keep rendering", renderPage("home", oldMigrated, "file").length > 500 && oldMigrated.menu.every((m) => (m.link ?? "") === ""));
+
+// --- page catalog integrity ---
+check("every page type has a builder hint", ALL_PAGES.every((p) => (PAGE_HINTS[p] || "").length > 8));
+check("pageListKind maps new pages to their content", pageListKind("pricing", "saas") === "menu" && pageListKind("faq", "law") === "faqs" && pageListKind("testimonials", "fitness") === "testimonials" && pageListKind("news", "agency") === "projects" && pageListKind("home", "law") === null);
+check("menu page kind follows the template", pageListKind("menu", "business") === "services" && pageListKind("menu", "portfolio") === "projects" && pageListKind("menu", "shop") === "menu");
 
 void ALL_PAGES;
 

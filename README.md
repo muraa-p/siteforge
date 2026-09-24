@@ -5,13 +5,14 @@ site build itself in a live preview, and download a ZIP of plain static HTML —
 no accounts, no AI, no backend, **$0 to run**.
 
 > Working title. The stack is deliberately boring and free so the product stays
-> cheap as it grows. The MVP foundation is here: **thirteen** templates (eatery,
+> cheap as it grows. The MVP foundation is here: **sixteen** templates (eatery,
 > portfolio, profile & freelancer, small business, modern studio, clinic &
 > hospital, bank & finance, online shop, film & video studio, HR & recruitment,
-> creative agency, newsroom & magazine, admin dashboard), editable color themes,
-> header/footer color overrides, image slots, social links, page management,
-> feature toggles, a working shop cart, clickable cards that open a detail
-> dialog, live preview and client-side ZIP export.
+> creative agency, newsroom & magazine, admin dashboard, fitness coach, SaaS
+> landing, law firm), editable color themes, header/footer color overrides,
+> image slots, social links, page management, feature toggles, a working shop
+> cart, clickable cards that open a detail dialog, live preview and client-side
+> ZIP export.
 
 ## Run it
 
@@ -24,27 +25,61 @@ npm run dev        # → http://localhost:5173
 
 ```bash
 npm run build      # type-checks + production build
-npm run smoke      # headless render-engine checks (264 assertions)
+npm run smoke      # headless render-engine checks (330 assertions)
 npx tsx scripts/gen-sample.ts   # writes real exported sites to ./sample-output
 ```
 
 The sample exports are written per template: `sample-output/{default, restaurant,
 portfolio, profile, business, modern, clinic, bank, shop, films, hr, agency,
-newsroom, dashboard}`. `default` is the restaurant-style template — it works for
-far more than restaurants (cafés, bakeries, takeaway…). Each sector template
-ships real, different pages: clinics get Departments + Doctors + an appointment
-page, banks get Accounts (a fee/rate table) + an "Open an account" page, shops
-get a product grid *with a working cart*, film studios get Films + a crew page,
-HR agencies get job listings, agencies get Work + a team page, the newsroom gets
-a lead story + story grid, and the dashboard gets KPI tiles + a reports table.
+newsroom, dashboard, fitness, saas, law}`. `default` is the restaurant-style
+template — it works for far more than restaurants (cafés, bakeries, takeaway…).
+Each sector template ships real, different pages: clinics get Departments +
+Doctors + an appointment page, banks get Accounts (a fee/rate table) + an "Open
+an account" page, shops get a product grid *with a working cart*, film studios
+get Films + a crew page, HR agencies get job listings, agencies get Work + a
+team page, the newsroom gets a lead story + story grid, the dashboard gets KPI
+tiles + a reports table, the fitness coach gets **priced Plans** + a booking
+page, the SaaS page gets Pricing + FAQ, and the law firm gets Practice areas +
+Attorneys + Questions.
+
+## Build your own site from 12 page types
+
+Templates are starting points, not cages. Every template is a set of
+**page types**, and the builder lets you add or remove any of them:
+
+| Page | What it shows | Editor it needs |
+|---|---|---|
+| Home | headline, intro, buttons | hero fields |
+| About | your story + photo | about text |
+| Menu | things you sell/serve, with prices | items |
+| Gallery | photo grid | projects |
+| Team | the people | team |
+| Booking | request form (appointments/quotes) | — |
+| Jobs | open roles | roles |
+| **Pricing** | plans/packages/tiers with prices | items |
+| **FAQ** | questions + answers (native collapsible) | questions |
+| **Testimonials** | client quotes | quotes |
+| **News** | posts/articles | projects |
+| Contact | details, map, form | contact fields |
+
+Plus unlimited **custom pages** (name it, write it, add a button). The content
+editors follow your page choices: add *Pricing* and the plans editor appears;
+add *FAQ* and the questions editor appears. Each add-page button explains itself
+in a tooltip, in plain English.
+
+Cards are yours to point anywhere: every menu, service, project and team card
+has an optional **Button link** — pick any page of your own site or paste any
+URL. Leave it empty and the template's sensible default (Book this / Get a
+quote / Ask about this) is used.
 
 ## Genuinely different layouts (not just paint)
 
 Templates differ in page **structure**, not only colors and text. Each template
 picks one of five "chrome" archetypes (researched from real-world template
-catalogues — Dimension, Prologue, Story and Massively by HTML5 UP):
+catalogues — Dimension, Prologue, Story and Massively by HTML5 UP, plus Wix
+gallery patterns):
 
-- **`topbar`** — classic sticky top bar (eatery, business, modern, clinic, bank, shop, films, HR).
+- **`topbar`** — classic sticky top bar (eatery, business, modern, clinic, bank, shop, films, HR, fitness, SaaS, law).
 - **`centered`** — no top bar: a slim centred bar (medallion + brand + pill nav) sits above a full-screen logo/title hero (portfolio). The bar is on **every** page, so you can always navigate away.
 - **`sidebar`** — a fixed left sidebar with avatar, name, page links and socials, content on the right (profile & freelancer, admin dashboard). Collapses to a hamburger dropdown on phones.
 - **`split`** — full-screen statement, then alternating text/visual blocks (creative agency).
@@ -54,7 +89,9 @@ On top of the skeleton, each sector gets its own typography and texture: the ban
 is institutional (uppercase headline, bordered rate table), films is editorial
 (1px rules everywhere, uppercase section heads, serif titles, squared poster
 grid), the restaurant sets a warm editorial serif headline with dotted menu
-dividers, and the modern studio runs oversized display type on colour blobs.
+dividers, the fitness coach runs an oversized high-contrast statement over a
+tiered Plans grid, the SaaS page centres everything around a product hero, and
+the law firm stays restrained and serif-led.
 
 ## Things that actually work (no backend)
 
@@ -71,6 +108,9 @@ dividers, and the modern studio runs oversized display type on colour blobs.
   editorial masthead render on every page, and the sidebar gets a real hamburger
   on small screens instead of a horizontal scroller.
 - **Dark mode, contact form, maps, WhatsApp float** — all still static-only.
+- **Plans, FAQ, quotes** — pricing tiers with a highlighted popular plan, a
+  collapsible FAQ built on native `<details>` (works with JavaScript disabled),
+  and client quotes you can add, edit or delete.
 
 ## How it works (the important part)
 
@@ -93,15 +133,18 @@ Everything runs in the browser: ZIP export uses `jszip`, preview uses an
 
 ## Stack (all free)
 
-- **Frontend / builder:** React 18 + Vite + TypeScript
+- **Frontend / builder:** React 18 + Vite 8 + TypeScript
 - **ZIP export:** jszip (client-side)
-- **No backend.** When accounts/saving-to-cloud land, the plan is Supabase free
+- **No backend, no accounts, no keys.** `npm audit`: 0 vulnerabilities.
+- When accounts/saving-to-cloud land, the plan is Supabase free
   tier (50k MAU) + Cloudflare Workers/R2 free tier for storage.
 
 ## Roadmap
 
-- [x] Thirteen templates (eatery / portfolio / profile & freelancer / small business / modern studio / clinic / bank / shop / films / HR / creative agency / newsroom / admin dashboard) with genuinely different layouts & pages + live preview + ZIP export
+- [x] Sixteen templates (eatery / portfolio / profile / business / modern / clinic / bank / shop / films / HR / agency / newsroom / dashboard / fitness / SaaS / law) with genuinely different layouts & pages + live preview + ZIP export
 - [x] Bug round: portfolio nav on every page, mobile sidebar hamburger, working shop cart, clickable cards with a detail dialog
+- [x] 12 page types users can add/remove freely (incl. Pricing, FAQ, Testimonials, News) + editors that follow the pages you choose
+- [x] Per-card button links (any page of your site or any URL) + plan tiers with a highlighted popular plan
 - [x] Text & button alignment (hero + custom pages) + page-linked buttons
 - [x] Header & footer color overrides, main-button text + color
 - [x] Image slots (hero bg, about photo, item photos) + social media links
@@ -118,7 +161,7 @@ src/
   lib/
     types.ts       # SiteConfig data model (one JSON doc = one site)
     templates.ts   # template registry (pages, labels, defaults, layout archetype per template)
-    palettes.ts    # 9 color themes, each with light + dark tokens
+    palettes.ts    # 10 color themes, each with light + dark tokens
     render.ts      # the single render engine (file/preview/app modes)
     sample.ts      # sample content per template + normalizeSite migration
     images.ts      # on-device image downscale/encode (data URLs)
