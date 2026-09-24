@@ -1,0 +1,147 @@
+# SiteForge 🛠️
+
+A website builder for non-technical people. Answer a friendly checklist, watch the
+site build itself in a live preview, and download a ZIP of plain static HTML —
+no accounts, no AI, no backend, **$0 to run**.
+
+> Working title. The stack is deliberately boring and free so the product stays
+> cheap as it grows. The MVP foundation is here: **thirteen** templates (eatery,
+> portfolio, profile & freelancer, small business, modern studio, clinic &
+> hospital, bank & finance, online shop, film & video studio, HR & recruitment,
+> creative agency, newsroom & magazine, admin dashboard), editable color themes,
+> header/footer color overrides, image slots, social links, page management,
+> feature toggles, a working shop cart, clickable cards that open a detail
+> dialog, live preview and client-side ZIP export.
+
+## Run it
+
+```bash
+npm install
+npm run dev        # → http://localhost:5173
+```
+
+## Verify it
+
+```bash
+npm run build      # type-checks + production build
+npm run smoke      # headless render-engine checks (264 assertions)
+npx tsx scripts/gen-sample.ts   # writes real exported sites to ./sample-output
+```
+
+The sample exports are written per template: `sample-output/{default, restaurant,
+portfolio, profile, business, modern, clinic, bank, shop, films, hr, agency,
+newsroom, dashboard}`. `default` is the restaurant-style template — it works for
+far more than restaurants (cafés, bakeries, takeaway…). Each sector template
+ships real, different pages: clinics get Departments + Doctors + an appointment
+page, banks get Accounts (a fee/rate table) + an "Open an account" page, shops
+get a product grid *with a working cart*, film studios get Films + a crew page,
+HR agencies get job listings, agencies get Work + a team page, the newsroom gets
+a lead story + story grid, and the dashboard gets KPI tiles + a reports table.
+
+## Genuinely different layouts (not just paint)
+
+Templates differ in page **structure**, not only colors and text. Each template
+picks one of five "chrome" archetypes (researched from real-world template
+catalogues — Dimension, Prologue, Story and Massively by HTML5 UP):
+
+- **`topbar`** — classic sticky top bar (eatery, business, modern, clinic, bank, shop, films, HR).
+- **`centered`** — no top bar: a slim centred bar (medallion + brand + pill nav) sits above a full-screen logo/title hero (portfolio). The bar is on **every** page, so you can always navigate away.
+- **`sidebar`** — a fixed left sidebar with avatar, name, page links and socials, content on the right (profile & freelancer, admin dashboard). Collapses to a hamburger dropdown on phones.
+- **`split`** — full-screen statement, then alternating text/visual blocks (creative agency).
+- **`editorial`** — centred serif masthead + a bordered nav row, lead story above a dense two-column grid (newsroom & magazine).
+
+On top of the skeleton, each sector gets its own typography and texture: the bank
+is institutional (uppercase headline, bordered rate table), films is editorial
+(1px rules everywhere, uppercase section heads, serif titles, squared poster
+grid), the restaurant sets a warm editorial serif headline with dotted menu
+dividers, and the modern studio runs oversized display type on colour blobs.
+
+## Things that actually work (no backend)
+
+- **Shop cart** — every product card has *Add to cart*; a floating button opens a
+  slide-out drawer with quantity +/− and a live total. Checkout builds a real
+  order link: `wa.me` when the WhatsApp feature is on, otherwise a `mailto:`
+  with the full itemised order. No payments, no server, no fake "coming soon".
+- **Clickable cards** — menu, service, project and team cards are keyboard- and
+  click-friendly (`tabindex` + `role="button"`) and open a detail dialog with the
+  title, price/role, description and a contextual CTA (book / order / enquire /
+  read more). Closes on the X, the backdrop or `Esc`; inner links still win, so
+  "Visit project" keeps working.
+- **Navigation that never dead-ends** — the centred portfolio bar and the
+  editorial masthead render on every page, and the sidebar gets a real hamburger
+  on small screens instead of a horizontal scroller.
+- **Dark mode, contact form, maps, WhatsApp float** — all still static-only.
+
+## How it works (the important part)
+
+Every description of a site is one plain JSON object — a `SiteConfig`
+(`src/lib/types.ts`). There is **exactly one render function**
+(`src/lib/render.ts`) that turns that config into HTML, and it is used for all
+three outputs:
+
+| Mode | Used for | Notes |
+|---|---|---|
+| `file` | the ZIP export | one `.html` per page + `README.txt` |
+| `preview` | the live preview iframe | same markup; links are intercepted via `postMessage` so the builder switches pages |
+| `app` | "Open preview" in a new tab | single-file build with hash routing (future share links) |
+
+Because preview and export share the same renderer, **what you see is exactly
+what you download** — verified by the smoke test.
+
+Everything runs in the browser: ZIP export uses `jszip`, preview uses an
+`<iframe srcdoc>`, drafts auto-save to `localStorage`.
+
+## Stack (all free)
+
+- **Frontend / builder:** React 18 + Vite + TypeScript
+- **ZIP export:** jszip (client-side)
+- **No backend.** When accounts/saving-to-cloud land, the plan is Supabase free
+  tier (50k MAU) + Cloudflare Workers/R2 free tier for storage.
+
+## Roadmap
+
+- [x] Thirteen templates (eatery / portfolio / profile & freelancer / small business / modern studio / clinic / bank / shop / films / HR / creative agency / newsroom / admin dashboard) with genuinely different layouts & pages + live preview + ZIP export
+- [x] Bug round: portfolio nav on every page, mobile sidebar hamburger, working shop cart, clickable cards with a detail dialog
+- [x] Text & button alignment (hero + custom pages) + page-linked buttons
+- [x] Header & footer color overrides, main-button text + color
+- [x] Image slots (hero bg, about photo, item photos) + social media links
+- [x] Dedicated map location (separate from the shown address)
+- [ ] AI-assisted copy/images (nothing before this is paid)
+- [ ] Builder accounts + saved projects (Supabase free)
+- [ ] "Share live preview" links (the `app` mode is ready for this)
+- [ ] Paid tier: real hosting + custom domains (when revenue exists)
+
+## Structure
+
+```
+src/
+  lib/
+    types.ts       # SiteConfig data model (one JSON doc = one site)
+    templates.ts   # template registry (pages, labels, defaults, layout archetype per template)
+    palettes.ts    # 9 color themes, each with light + dark tokens
+    render.ts      # the single render engine (file/preview/app modes)
+    sample.ts      # sample content per template + normalizeSite migration
+    images.ts      # on-device image downscale/encode (data URLs)
+    export.ts      # client-side ZIP download
+  components/
+    Controls.tsx   # the builder dashboard (templates, identity, theme, colors, images, pages, features, content, social, contact, buttons)
+    Preview.tsx    # live preview iframe with device toggle + nav interception
+    TopBar.tsx     # export / preview / reset
+    ui.tsx         # friendly primitives (sections, switches, image/color fields)
+scripts/
+  smoke.ts         # headless render-engine assertions
+  gen-sample.ts    # write the exported sites to ./sample-output
+```
+
+## Zero-cost principles (decisions so far)
+
+1. **No AI in the critical path.** Templates + config = deterministic generation
+   at ~$0 per site. AI (copy/images) is a later, optional, cheap add-on.
+2. **No hosted image pipeline.** Images are uploaded on-device, downscaled to a
+   compact JPEG data URL, embedded straight in the page and ZIP — no storage to
+   pay for. Keep photos under ~1500 px so drafts stay small in localStorage.
+3. **Preview = export.** One renderer, no drift, users trust it.
+4. **Features must work in static HTML.** Dark mode (CSS vars + localStorage),
+   WhatsApp (`wa.me`), map (`maps.google.com` embed, no key), contact form
+   (opens the visitor's email app). Real auth/backends are a paid-tier product,
+   not an MVP one.
