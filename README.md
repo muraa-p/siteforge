@@ -26,6 +26,15 @@ npm install
 npm run dev        # → http://localhost:5173
 ```
 
+**If the dev server ever shows a blank white page** (usually after a dependency
+upgrade), Vite's optimized-dependency cache is stale:
+
+```bash
+# stop the dev server, then:
+rm -rf node_modules/.vite      # Windows: rmdir /s /q node_modules\.vite
+npm run dev
+```
+
 ## Verify it
 
 ```bash
