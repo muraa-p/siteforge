@@ -1,8 +1,13 @@
 # SiteForge 🛠️
 
+![SiteForge](landing/og.jpg)
+
 A website builder for non-technical people. Answer a friendly checklist, watch the
 site build itself in a live preview, and download a ZIP of plain static HTML —
 no accounts, no AI, no backend, **$0 to run**.
+
+- **Live builder:** [muraa-p.github.io/siteforge/app](https://muraa-p.github.io/siteforge/app) · [vercel.app/app](https://siteforge.vercel.app/app) *(whichever your deployment uses — see Deploy below)*
+- **Issues & ideas:** [github.com/muraa-p/siteforge/issues](https://github.com/muraa-p/siteforge/issues) — this is where the roadmap gets decided.
 
 > Working title. The stack is deliberately boring and free so the product stays
 > cheap as it grows. The MVP foundation is here: **sixteen** templates (eatery,
@@ -140,6 +145,28 @@ completely unaffected: they behave like an ordinary static website.
 Everything runs in the browser: ZIP export uses `jszip`, preview uses an
 `<iframe srcdoc>`, drafts auto-save to `localStorage`.
 
+## Deploy
+
+`npm run build:deploy` produces everything a static host needs in `dist/`:
+
+```
+dist/index.html        the landing page        (from landing/)
+dist/styles.css        landing styles
+dist/shots/*.webp      real template screenshots
+dist/og.jpg            social preview image
+dist/app/              the builder app         (vite build, base=/app/)
+dist/examples/<tpl>/   16 exported sample sites, browsable and clickable
+```
+
+The app is a pure static bundle, so **any** host works. Vercel, Netlify and
+Cloudflare Pages all deploy it with no configuration beyond the build command
+(`npm run build:deploy`) and the output directory (`dist`); `vercel.json` in the
+repo already contains those settings. For GitHub Pages, run the same build and
+publish `dist/` from a `gh-pages` branch.
+
+`npm run shots` and `npm run og` regenerate the landing-page screenshots and
+social card from the real exports (they need the dev server running).
+
 ## Stack (all free)
 
 - **Frontend / builder:** React 18 + Vite 8 + TypeScript
@@ -182,8 +209,13 @@ src/
     TopBar.tsx     # export / preview / reset
     ui.tsx         # friendly primitives (sections, switches, image/color fields)
 scripts/
-  smoke.ts         # headless render-engine assertions
-  gen-sample.ts    # write the exported sites to ./sample-output
+  smoke.ts           # headless render-engine assertions
+  gen-sample.ts      # write the exported sites to ./sample-output
+  shots.ts           # screenshot every export for the landing page
+  og-image.ts        # build the social preview card + favicon
+  prepare-dist.mjs   # assemble the deployable dist/ (landing + app + examples)
+  check-deploy.mjs   # assert every landing-page link resolves in dist/
+landing/             # the public intro page (plain HTML/CSS, no framework)
 ```
 
 ## Zero-cost principles (decisions so far)

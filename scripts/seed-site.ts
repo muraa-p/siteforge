@@ -1,6 +1,7 @@
 /**
- * TEMP helper (deleted after use): writes seed-site.html which seeds
- * localStorage with a given template's site, then redirects to the app.
+ * Dev helper: writes seed-site.html, which seeds localStorage with a given
+ * template's sample site and then redirects to the app. Handy for testing the
+ * builder against a known configuration (delete the file afterwards).
  *   npx tsx scripts/seed-site.ts clinic   →  http://localhost:5173/seed-site.html
  */
 import { writeFileSync } from "fs";
