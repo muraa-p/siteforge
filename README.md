@@ -6,8 +6,10 @@ A website builder for non-technical people. Answer a friendly checklist, watch t
 site build itself in a live preview, and download a ZIP of plain static HTML —
 no accounts, no AI, no backend, **$0 to run**.
 
-- **Live builder:** [muraa-p.github.io/siteforge/app](https://muraa-p.github.io/siteforge/app) · [vercel.app/app](https://siteforge.vercel.app/app) *(whichever your deployment uses — see Deploy below)*
-- **Issues & ideas:** [github.com/muraa-p/siteforge/issues](https://github.com/muraa-p/siteforge/issues) — this is where the roadmap gets decided.
+- **Live site:** https://siteforge-indol-xi.vercel.app
+- **Open the builder:** https://siteforge-indol-xi.vercel.app/app
+- **Live examples:** https://siteforge-indol-xi.vercel.app/examples/shop
+- **Source & issues:** [github.com/muraa-p/siteforge](https://github.com/muraa-p/siteforge) — this is where the roadmap gets decided.
 
 > Working title. The stack is deliberately boring and free so the product stays
 > cheap as it grows. The MVP foundation is here: **sixteen** templates (eatery,

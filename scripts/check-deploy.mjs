@@ -16,17 +16,18 @@ for (const m of html.matchAll(/(?:src|href)="([^"]+)"/g)) {
 
 let bad = 0;
 for (const ref of [...refs].sort()) {
-  const target = ref.endsWith("/") ? join("dist", ref, "index.html") : join("dist", ref);
+  const asDir = join("dist", ref);
+  const target = ref.endsWith("/") || !ref.includes(".") ? join(asDir, "index.html") : asDir;
   const ok = existsSync(target);
   if (!ok) bad++;
   console.log(`${ok ? "ok  " : "MISS"} ${ref}`);
 }
 
 // Every template in the gallery must have a real example site.
-const gallery = [...html.matchAll(/href="(examples\/[a-z]+\/index\.html)"/g)].map((m) => m[1]);
+const gallery = [...html.matchAll(/href="(examples\/[a-z]+)"/g)].map((m) => m[1]);
 console.log(`\ngallery links: ${gallery.length}`);
 for (const g of gallery) {
-  const ok = existsSync(join("dist", g));
+  const ok = existsSync(join("dist", g, "index.html"));
   if (!ok) bad++;
   console.log(`${ok ? "ok  " : "MISS"} ${g}`);
 }
