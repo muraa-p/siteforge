@@ -521,8 +521,19 @@ const oldMigrated = normalizeSite(oldDraft);
 check("old drafts gain faqs + testimonials", oldMigrated.faqs.length === 0 && oldMigrated.testimonials.length === 0);
 check("old drafts keep rendering", renderPage("home", oldMigrated, "file").length > 500 && oldMigrated.menu.every((m) => (m.link ?? "") === ""));
 
-// --- page catalog integrity ---
-check("every page type has a builder hint", ALL_PAGES.every((p) => (PAGE_HINTS[p] || "").length > 8));
+// --- preview link handling: the preview must never leave the site ---
+const prevFit = renderPage("home", createSite("fitness"), "preview");
+check("preview ships the in-preview link router", prevFit.includes("__sfGo") && prevFit.includes("__sfPageFromHref"));
+check("preview router handles page-hash and file hrefs", prevFit.includes("#\\/?page\\/") && prevFit.includes("\\.html"));
+check("preview router closes the dialog before navigating", /__closeModal\(\);[\s\S]{0,120}SF_NAV/.test(prevFit));
+const fileFit = renderPage("home", createSite("fitness"), "file");
+check("exported files keep normal link behaviour (no router)", !fileFit.includes("__sfPageFromHref") && !fileFit.includes("SF_NAV"));
+check("exported files link to sibling pages as real files", fileFit.includes('href="./booking.html"'));
+const appFit = renderFullApp(createSite("fitness"));
+check("open-preview app uses its own hash router, not the preview one", !appFit.includes("__sfPageFromHref") && appFit.includes("SF_NAV") === false && appFit.includes("showPage"));
+check("modal CTA stays in the same tab target for internal links", fileFit.includes('class="btn modal-cta"') && fileFit.includes("target=\"_blank\""));
+
+// --- page catalog integrity ---check("every page type has a builder hint", ALL_PAGES.every((p) => (PAGE_HINTS[p] || "").length > 8));
 check("pageListKind maps new pages to their content", pageListKind("pricing", "saas") === "menu" && pageListKind("faq", "law") === "faqs" && pageListKind("testimonials", "fitness") === "testimonials" && pageListKind("news", "agency") === "projects" && pageListKind("home", "law") === null);
 check("menu page kind follows the template", pageListKind("menu", "business") === "services" && pageListKind("menu", "portfolio") === "projects" && pageListKind("menu", "shop") === "menu");
 

@@ -50,8 +50,26 @@ export function Preview({
   }, [enabledPages, onPage]);
 
   function handleFrameLoad() {
-    const win = iframeRef.current?.contentWindow;
-    if (!win) return;
+    const frame = iframeRef.current;
+    const win = frame?.contentWindow;
+    if (!frame || !win) return;
+    // Safety net: the preview must always show the generated site. If anything
+    // ever navigated the frame to a real URL (an escaped link, a stray hash), it
+    // would render a second copy of the builder inside the preview pane — so
+    // detect that and put the site back.
+    let escaped = false;
+    try {
+      const href = win.location.href;
+      escaped = !/^about:/i.test(href);
+    } catch {
+      // Cross-origin means it navigated somewhere else entirely.
+      escaped = true;
+    }
+    if (escaped) {
+      scrollPosRef.current = 0;
+      frame.srcdoc = html;
+      return;
+    }
     try {
       win.scrollTo(0, scrollPosRef.current);
       win.addEventListener(

@@ -25,7 +25,7 @@ npm run dev        # → http://localhost:5173
 
 ```bash
 npm run build      # type-checks + production build
-npm run smoke      # headless render-engine checks (330 assertions)
+npm run smoke      # headless render-engine checks (336 assertions)
 npx tsx scripts/gen-sample.ts   # writes real exported sites to ./sample-output
 ```
 
@@ -128,6 +128,15 @@ three outputs:
 Because preview and export share the same renderer, **what you see is exactly
 what you download** — verified by the smoke test.
 
+The one intentional difference is link handling. In the live preview, clicks on
+links are handled *inside* the preview: anything pointing at a page of the site
+(card CTAs, plan buttons, nav, footer, in-page anchors) switches the preview page
+in place, real external links open in a new tab, and nothing is ever allowed to
+navigate the preview frame away — otherwise the builder would render a second
+time inside the preview pane. If anything ever does escape, the preview pane
+detects it and puts the generated site straight back. Exported files are
+completely unaffected: they behave like an ordinary static website.
+
 Everything runs in the browser: ZIP export uses `jszip`, preview uses an
 `<iframe srcdoc>`, drafts auto-save to `localStorage`.
 
@@ -145,6 +154,7 @@ Everything runs in the browser: ZIP export uses `jszip`, preview uses an
 - [x] Bug round: portfolio nav on every page, mobile sidebar hamburger, working shop cart, clickable cards with a detail dialog
 - [x] 12 page types users can add/remove freely (incl. Pricing, FAQ, Testimonials, News) + editors that follow the pages you choose
 - [x] Per-card button links (any page of your site or any URL) + plan tiers with a highlighted popular plan
+- [x] Preview link handling: card CTAs and plan buttons switch pages in place; the preview frame can never navigate away (no second builder inside the preview)
 - [x] Text & button alignment (hero + custom pages) + page-linked buttons
 - [x] Header & footer color overrides, main-button text + color
 - [x] Image slots (hero bg, about photo, item photos) + social media links

@@ -2298,11 +2298,36 @@ function pageScript(mode: RenderMode, site: SiteConfig): string {
   });
   __cartRender();` : ""}
   ${intercept ? `
+  /* Preview mode: every link click is handled INSIDE the preview.
+     Links that point at a page of this site switch the preview page via
+     postMessage; in-page anchors (#section) scroll; real external links keep
+     opening in a new tab. Nothing may navigate the preview frame away, or the
+     builder would appear a second time inside the preview pane. */
+  function __sfGo(page) {
+    try {
+      if (document.body && document.body.classList.contains("modal-open")) __closeModal();
+      window.parent.postMessage({ type: "SF_NAV", page: page }, "*");
+    } catch (err) {}
+  }
+  function __sfPageFromHref(href) {
+    var h = String(href == null ? "" : href);
+    var m = /^#\\/?page\\/(.+)$/.exec(h);
+    if (m) return m[1];
+    var f = /^(?:\\.\\/)?(?:.*\\/)?([a-z0-9_-]+)\\.html?$/i.exec(h);
+    if (f) return f[1] === "index" ? "home" : f[1];
+    return "";
+  }
   document.addEventListener("click", function (e) {
-    var a = e.target && e.target.closest ? e.target.closest("a[data-nav]") : null;
+    var a = e.target && e.target.closest ? e.target.closest("a[href]") : null;
     if (!a) return;
+    var nav = a.getAttribute("data-nav");
+    if (nav) { e.preventDefault(); __sfGo(nav); return; }
+    var href = a.getAttribute("href") || "";
+    if (href.charAt(0) === "#" && href.indexOf("#/page/") !== 0 && href.indexOf("#/") !== 0) return;
+    var page = __sfPageFromHref(href);
+    if (page) { e.preventDefault(); __sfGo(page); return; }
+    if (/^(https?:|mailto:|tel:)/i.test(href)) return;
     e.preventDefault();
-    try { window.parent.postMessage({ type: "SF_NAV", page: a.getAttribute("data-nav") }, "*"); } catch (err) {}
   });` : ""}
   ${router}
   ${formInit}
